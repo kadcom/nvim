@@ -32,13 +32,10 @@ end, { expr = true, silent = true })
 map("i", "<c-space>", "coc#refresh()", { expr = true, silent = true })
 
 -- Make <CR> auto-select the first completion item
-map("i", "<cr>", function()
-  if vim.fn.pumvisible() == 1 then
-    return vim.fn['coc#_select_confirm']()
-  else
-    return "<C-g>u<CR><c-r>=coc#on_enter()<CR>"
-  end
-end, { expr = true, silent = true })
+vim.cmd([[
+  inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
+        \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+]])
 
 -- Navigation
 map("n", "[g", "<Plug>(coc-diagnostic-prev)", { silent = true })
