@@ -157,7 +157,22 @@ return {
   { "nvim-lua/plenary.nvim", lazy = true },
   { "MunifTanjim/nui.nvim", lazy = true },
   { "MeanderingProgrammer/render-markdown.nvim", ft = "markdown" },
-  { "hrsh7th/nvim-cmp", event = "InsertEnter" },
+
+  -- nvim-cmp (fallback completion when CoC is not available)
+  {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = {
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+    },
+    config = function()
+      require("config.nvim-cmp")
+    end,
+  },
+  { "hrsh7th/cmp-buffer", lazy = true },
+  { "hrsh7th/cmp-path", lazy = true },
+
   { "nvim-tree/nvim-web-devicons", lazy = true },
   { "HakonHarnes/img-clip.nvim", keys = { "<leader>p" } },
 
