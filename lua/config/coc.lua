@@ -149,3 +149,10 @@ vim.api.nvim_create_autocmd("User", {
   pattern = "CocJumpPlaceholder",
   command = "call CocActionAsync('showSignatureHelp')",
 })
+
+-- Force redraw when LSP status changes (fixes display shift in screen-256color)
+vim.api.nvim_create_autocmd("User", {
+  group = coc_group,
+  pattern = "CocStatusChange",
+  command = "redraw",
+})
