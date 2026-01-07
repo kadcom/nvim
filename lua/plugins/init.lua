@@ -128,6 +128,17 @@ return {
 
       alpha.setup(dashboard.config)
 
+      -- Open NERDTree after alpha is ready
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "AlphaReady",
+        once = true,
+        callback = function()
+          vim.schedule(function()
+            vim.cmd("NERDTreeToggle")
+          end)
+        end,
+      })
+
       -- Close alpha when opening a file (e.g., from NERDTree)
       vim.api.nvim_create_autocmd("BufEnter", {
         callback = function()
