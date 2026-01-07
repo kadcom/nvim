@@ -9,16 +9,19 @@ local function check_back_space()
   return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
 end
 
--- Tab completion
+-- Smart Tab: Copilot first, then CoC completion
 map("i", "<TAB>", function()
-  if vim.fn.pumvisible() == 1 then
+  -- Check if Copilot has a suggestion visible
+  if vim.fn['copilot#GetDisplayedSuggestion']().text ~= '' then
+    return vim.fn['copilot#Accept']("\\<CR>")
+  elseif vim.fn.pumvisible() == 1 then
     return "<C-n>"
   elseif check_back_space() then
     return "<TAB>"
   else
     return vim.fn['coc#refresh']()
   end
-end, { expr = true, silent = true })
+end, { expr = true, silent = true, replace_keycodes = false })
 
 map("i", "<S-TAB>", function()
   if vim.fn.pumvisible() == 1 then
