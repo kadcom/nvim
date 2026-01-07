@@ -45,6 +45,113 @@ return {
 
   { "vim-airline/vim-airline-themes", lazy = true },
 
+  -- Startup screen with time-based greeting
+  {
+    "goolord/alpha-nvim",
+    event = "VimEnter",
+    config = function()
+      local alpha = require("alpha")
+      local dashboard = require("alpha.themes.dashboard")
+
+      local hour = tonumber(os.date("%H"))
+      local ascii
+
+      if hour >= 5 and hour < 12 then
+        -- 早安 (Good morning)
+        ascii = {
+          [[           @@@@@@@@@@@@@@@@@               @@@                  ]],
+          [[          @@@@@@@@@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[          @@@              @@@    @@@                 @@@       ]],
+          [[          @@@@@@@@@@@@@@@@@@@@    @@@      @@@       @@@@       ]],
+          [[          @@@             *@@@            @@@     *@@:@         ]],
+          [[          @@@             #@@@   @@@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[          @@@@@@@@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[                  @@@                 @@@        @@@            ]],
+          [[        @@@@@@@@@:@@@+@@@@@@@@@     @@@@@:     @@@@             ]],
+          [[       @@@@@@@@@@@@@@@@@@@@@@@@@      @@@@@@@@@@@               ]],
+          [[                  @@@                     @@@@@@@@@             ]],
+          [[                  @@@            @@@@@@@@@@@@   @@@@@@@@        ]],
+          [[                  @@@            @@@@@@@            @@@@@       ]],
+          [[]],
+          [[                      光凱理，準備寫程式吧！                      ]],
+        }
+      elseif hour >= 12 and hour < 18 then
+        -- 午安 (Good afternoon)
+        ascii = {
+          [[             @@@+                          @@@                  ]],
+          [[            :@@@ #@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[           @@@@@@@@@@@@@@@@@@@@   @@@                 @@@       ]],
+          [[          @@@@     @@*            @@@      @@@       @@@@       ]],
+          [[        @@@@      %@@@                    @@@     *@@:@         ]],
+          [[         @@       #@@@           @@@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[                   @@%           @@@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[       @@@@@@@@@@@@@@@@@@@@@@@@@      @@@        @@@            ]],
+          [[                   @@#              @@@@@:     @@@@             ]],
+          [[                  %@@@                @@@@@@@@@@@               ]],
+          [[                  %@@@                    @@@@@@@@@             ]],
+          [[                  %@@@           @@@@@@@@@@@@   @@@@@@@@        ]],
+          [[                  @@@@           @@@@@@@            @@@@@       ]],
+          [[]],
+          [[                      光凱理，準備寫程式吧！                      ]],
+        }
+      else
+        -- 晚安 (Good evening)
+        ascii = {
+          [[                    @@@:                   @@@                  ]],
+          [[        @@@@@@@    @@@@@@@@@      @@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[        @@@  @@   @@@    @@@@     @@@                 @@@       ]],
+          [[        @@@  @@ @@@     @@@       @@@      @@@       @@@@       ]],
+          [[        @@@  @@ @@@@@@@@@@@@@@            @@@     *@@:@         ]],
+          [[        @@@  @@  @@   @@@   @@@  @@@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[        @@@@@@@  @@   @@@   @@%  @@@@@@@@@@@@@@@@@@@@@@@@       ]],
+          [[        @@%  @@  @@@@@@@@@@@@@@       @@@        @@@            ]],
+          [[        @@@  @@  @@@@@@@@@@@@@      @@@@@:     @@@@             ]],
+          [[        @@@  @@     +@@@@@    @:      @@@@@@@@@@@               ]],
+          [[        @@%  @@    @@@ @@@   @@@          @@@@@@@@@             ]],
+          [[        @@@@@@@ @@@@@  @@@@@@@@@ @@@@@@@@@@@@   @@@@@@@@        ]],
+          [[         @@@@@ @@@@     @@@@@@@  @@@@@@@            @@@@@       ]],
+          [[]],
+          [[                      光凱理，準備寫程式吧！                      ]],
+        }
+      end
+
+      dashboard.section.header.val = ascii
+      dashboard.section.buttons.val = {
+        dashboard.button("e", "  New file", ":ene <BAR> startinsert<CR>"),
+        dashboard.button("f", "  Find file", ":Files<CR>"),
+        dashboard.button("r", "  Recent", ":CocList mru<CR>"),
+        dashboard.button("q", "  Quit", ":qa<CR>"),
+      }
+
+      dashboard.section.header.opts.hl = "AlphaHeader"
+      dashboard.section.buttons.opts.hl = "AlphaButtons"
+
+      alpha.setup(dashboard.config)
+
+      -- Close alpha when opening a file (e.g., from NERDTree)
+      vim.api.nvim_create_autocmd("BufEnter", {
+        callback = function()
+          local bufname = vim.api.nvim_buf_get_name(0)
+          local buftype = vim.bo.filetype
+          -- If entering a real file buffer (not NERDTree, not alpha)
+          if bufname ~= "" and buftype ~= "alpha" and not bufname:match("NERD_tree") then
+            -- Schedule deletion to avoid conflicts with alpha's autocommands
+            vim.schedule(function()
+              for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+                if vim.api.nvim_buf_is_valid(buf) then
+                  local ok, ft = pcall(vim.api.nvim_buf_get_option, buf, "filetype")
+                  if ok and ft == "alpha" then
+                    pcall(vim.api.nvim_buf_delete, buf, { force = true })
+                  end
+                end
+              end
+            end)
+          end
+        end,
+      })
+    end,
+  },
+
   -- File Management
   {
     "preservim/nerdtree",
@@ -67,8 +174,6 @@ return {
       vim.g.nerdtree_tabs_open_on_gui_startup = 0
       vim.g.NERDTreeWinSize = 30
 
-      -- Auto-open NERDTree on startup
-      vim.cmd("autocmd VimEnter * NERDTree")
     end,
   },
 
